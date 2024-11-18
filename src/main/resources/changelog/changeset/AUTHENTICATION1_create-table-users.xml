@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="1" author="Adrian">
+        <createTable tableName="users">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+           <column name="email" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+           </column>
+            <column name="password" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="users"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="2" author="Adrian">
+        <insert tableName="users">
+            <column name="email" value="user@mail.ru"/>
+            <column name="passwrod" value="$2a$12$sdYuYBdBzOr2N83osZjeC.at5fVGLKTBeG2kBLZwmdSl2uBzu4QX."/>
+        </insert>
+        <rollback>
+            <delete tableName="users">
+                <where>email='user@mail.ru'</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+
+</databaseChangeLog>

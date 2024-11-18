@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: Authentication-Service
+  datasource:
+    url: ${DB_PASSWORD}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  liquibase:
+    change-log: db/changelog/changelog.xml
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL}
+
+logging:
+  level:
+    root: info
+    org.andarworld.courseservice: debug
+
+security:
+  secretKey: ${SECRET_KEY}
+  expirationTime: ${EXPIRATION_TIME}
+  issuer: ${ISSUER}
