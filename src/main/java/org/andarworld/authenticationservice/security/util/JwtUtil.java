@@ -1,40 +1,73 @@
 package org.andarworld.authenticationservice.security.util;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import org.andarworld.authenticationservice.persistence.model.User;
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+import org.andarworld.authenticationservice.api.exceptions.JwtValidationException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import java.text.ParseException;
 import java.util.Date;
 
+@Component
 public class JwtUtil {
-    @Value("${security.secretKey}")
-    private String secretKey;
 
-    @Value("${security.expirationTime}")
-    private long expirationTime;
+    private final String secretKey;
+    private final long expirationTime;
+    private final String issuer;
 
-    @Value("${security.issuer}")
-    private String issuer;
-
-    public String generateToken(User user) {
-        return Jwts.builder()
-                .issuer(issuer)
-                .subject(user.getEmail())
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expirationTime))
-                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
-                .compact();
+    public JwtUtil(@Value("${security.secretKey}") String secretKey,
+                   @Value("${security.expirationTime}") long expirationTime,
+                   @Value("${security.issuer}") String issuer) {
+        this.secretKey = secretKey;
+        this.expirationTime = expirationTime;
+        this.issuer = issuer;
     }
 
-    public boolean validateToken(String token, User user) {
-        Claims claims = Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-        return claims.getSubject().equals(user.getEmail());
+    public String generateToken(UserDetails user)  {
+        try {
+        JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS256);
+
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .issuer(issuer)
+                .issueTime(new Date())
+                .subject(user.getUsername())
+                .expirationTime(new Date(System.currentTimeMillis() + expirationTime))
+                .build();
+
+        SignedJWT signedJWT = new SignedJWT(jwsHeader, claimsSet);
+
+        JWSSigner signer = new MACSigner(secretKey);
+        signedJWT.sign(signer);
+
+        return signedJWT.serialize();
+        } catch (JOSEException e) {
+            throw new JwtValidationException("Failed to generate token!");
+        }
+    }
+
+    public void validateToken(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+
+            JWSVerifier verifier = new MACVerifier(secretKey);
+            if(!signedJWT.verify(verifier)) {
+                throw new JwtValidationException("Invalid token's signature!");
+            }
+
+            Date expirationDate = signedJWT.getJWTClaimsSet().getExpirationTime();
+            if(expirationDate.before(new Date())) {
+                throw new JwtValidationException("Expired token!");
+            }
+
+        } catch (ParseException e) {
+            throw new JwtValidationException("Malformed jwt token!");
+        } catch (JOSEException e) {
+            throw new JwtValidationException("Token is not valid!");
+        }
     }
 }

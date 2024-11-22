@@ -29,7 +29,7 @@
     <changeSet id="2" author="Adrian">
         <insert tableName="users">
             <column name="email" value="user@mail.ru"/>
-            <column name="passwrod" value="$2a$12$sdYuYBdBzOr2N83osZjeC.at5fVGLKTBeG2kBLZwmdSl2uBzu4QX."/>
+            <column name="password" value="$2a$12$sdYuYBdBzOr2N83osZjeC.at5fVGLKTBeG2kBLZwmdSl2uBzu4QX."/>
         </insert>
         <rollback>
             <delete tableName="users">
