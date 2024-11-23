@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:4321/testdbauthentication
+    username: u
+    password: 1
+  jpa:
+    show-sql: true
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+security:
+  secretKey: 7c6fd997da76ae9b358154fa1e0aa0d8248232167a91e7a5c77f5a54ada42e12
+  expirationTime: 1800000
+  issuer: AuthService

@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: Authentication-Service
+    name: AUTHENTICATION-SERVICE
   datasource:
     url: ${DB_PASSWORD}
     username: ${DB_USERNAME}
